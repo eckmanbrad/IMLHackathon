@@ -17,7 +17,7 @@ def clean(dirty_df):
 
     # add NS & WE cols
     dirty_df['NS'] = np.where((dirty_df['linqmap_magvar'] < 90) | (dirty_df['linqmap_magvar'] > 270), 1, 0)
-    dirty_df['EW'] = np.where((dirty_df['linqmap_magvar'] > 180) | (dirty_df['linqmap_magvar'] < 361), 1, 0)
+    dirty_df['EW'] = np.where((dirty_df['linqmap_magvar'] < 180), 1, 0)
 
     # remove magvar col
     dirty_df.drop(columns='linqmap_magvar', inplace=True)
@@ -55,5 +55,5 @@ def main():
 
 if __name__ == '__main__':
     # pd.set_option('display.max_rows', None)  # number of df rows to show
-    # pd.set_option('display.max_columns', None)  # number of df columns to show
+    pd.set_option('display.max_columns', None)  # number of df columns to show
     main()
