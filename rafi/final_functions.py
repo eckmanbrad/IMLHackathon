@@ -87,8 +87,7 @@ def get_comb_for_pred(df):
     with open('to_predict.csv', 'w') as f_object:
         writer_object = writer(f_object)
         writer_object.writerow(new_cols)
-
-        for i in range(0, df.shape[0] - 3, 4):
+        for i in range(0, df.shape[0], 4):
             print('\r', str(round(i / (df.shape[0] - 4) * 100, 2)) + ' %', end='')
             cur_row = []
             cur_row += list(df.iloc[i, :])
@@ -126,4 +125,4 @@ def split_X_y_cord_pred(df):
     y = df.loc[:, responses]
     X.drop(columns=responses, inplace=True)
 
-    return X, y[:, 'x_S5', 'y_S5']
+    return X, y.loc[:, ['x_S5', 'y_S5']].copy()
