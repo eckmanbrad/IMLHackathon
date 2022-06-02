@@ -3,6 +3,7 @@ import openpyxl
 import numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
+import datetime as dt
 
 
 def clean(dirty_df):
@@ -21,12 +22,28 @@ def clean(dirty_df):
 
     # remove magvar col
     dirty_df.drop(columns='linqmap_magvar', inplace=True)
+
+    # convert date & time to datetime object
+    dirty_df['pubDate'] = dirty_df.apply(lambda row: dt.datetime.strptime(row.pubDate, "%m/%d/%Y %H:%M:%S"), axis=1)
     return dirty_df
+
+
+def get_comb(df):
+    combs = []
+    for frst in range(len(df)):
+        print(frst)
+        for sec in range(frst, len(df)):
+            for thrd in range(sec, len(df)):
+                for fourth in range(thrd, len(df)):
+                    combs.append([frst, sec, thrd, fourth])
+    return combs
 
 
 def main():
     df = pd.read_csv('waze_data.csv')
     df = clean(df)
+    get_comb(df)
+
     print('all ok')
 
     print(df.columns)
