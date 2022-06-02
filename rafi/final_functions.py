@@ -8,6 +8,7 @@ def clean(dirty_df):
     # get tlv rows
     dirty_df = dirty_df[dirty_df['linqmap_city'] == 'תל אביב - יפו'].copy()
 
+
     # remove unwanted cols
     cols_to_remove = ['OBJECTID', 'linqmap_reportDescription', 'linqmap_nearby', 'linqmap_reportMood',
                       'linqmap_expectedBeginDate', 'linqmap_expectedEndDate', 'nComments', 'linqmap_city']
@@ -26,6 +27,7 @@ def clean(dirty_df):
     dirty_df['update_date'] = dirty_df.apply(lambda row: dt.datetime.fromtimestamp(row.update_date / 1000), axis=1)
     dirty_df['event_time_hours'] = dirty_df.apply(lambda row: (row.update_date - row.pubDate).total_seconds() / 3600,
                                                   axis=1)
+    dirty_df['linqmap_street'] = np.where(dirty_df['linqmap_street'] == 'שלום עליכם', 'סירקין',dirty_df['linqmap_street'])
 
     # add dummies for street
     dums = pd.get_dummies(dirty_df['linqmap_street'])

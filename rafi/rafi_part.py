@@ -1,8 +1,7 @@
-import pandas as pd
-from sklearn import tree
+import time
+import pickle
 from final_functions import *
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split, KFold
 from sklearn.metrics import f1_score, mean_squared_error
 import plotly.express as px
@@ -76,70 +75,20 @@ def our_knn(X, y):
     print('knn missclasification: ', round(loss_lst[k - 1], 3))
     kneigh = KNeighborsClassifier(n_neighbors=k)
     kneigh.fit(X, y)
+
+    pickle.dump(kneigh, open('finalized_knn_model.sav', 'wb'))
     return
 
 
-def our_rf(X, y):
-    train_x, test_x, train_y, test_y = train_test_split(X, y, test_size=0.25, random_state=24)
-
-    loss_lst = []
-    rf = RandomForestClassifier(max_depth=40).fit(train_x, train_y)
-    test_y_predict = rf.predict(test_x)
-    miss = f1_score(test_y.to_numpy(), test_y_predict, average='weighted')
-
-    elbow = px.scatter(loss_lst, title='depth = 6' + ', F1: ' + str(round(miss, 3)),
-                       labels={'index': 'depth', 'value': 'F1'})
-    elbow.write_html('rf.html', auto_open=False)
-
-    res = pd.DataFrame({'predicted': test_y_predict, 'real': test_y})
-    figres = px.scatter(res, title='F1: ' + str(round(miss, 2)),
-                        labels={'index': 'trade', 'value': 'label'})
-    figres.write_html('random_forest.html', auto_open=True)
-
-
-# def our_tree_part(X, y):
-#     train_x, test_x, train_y, test_y = train_test_split(X, y, test_size=0.25, random_state=24)
-#
-#     loss_lst = []
-#     rf = RandomForestClassifier(max_depth=40).fit(train_x, train_y)
-#     test_y_predict = rf.predict(test_x)
-#     miss = f1_score(test_y.to_numpy(), test_y_predict, average='weighted')
-#
-#     elbow = px.scatter(loss_lst, title='depth = 6' + ', F1: ' + str(round(miss, 3)),
-#                        labels={'index': 'depth', 'value': 'F1'})
-#     elbow.write_html('rf.html', auto_open=False)
-#
-#     res = pd.DataFrame({'predicted': test_y_predict, 'real': test_y})
-#     figres = px.scatter(res, title='misclassification_error: ' + str(round(miss, 2)),
-#                         labels={'index': 'trade', 'value': 'label'})
-#     figres.write_html('final.html', auto_open=True)
-
-
 def select_regularization_parameter(X, y_x, y_y,y_x_lam_range, y_y_lam_range, n_evaluations: int = 50):
-    """
-    Using sklearn's diabetes dataset use cross-validation to select the best fitting regularization parameter
-    values for Ridge and Lasso regressions
-
-    Parameters
-    ----------
-    n_samples: int, default=50
-        Number of samples to generate
-
-    n_evaluations: int, default = 500
-        Number of regularization parameter values to evaluate for each of the algorithms
-
-    r_lam_range, l_lam_range are numpy linspace objects with range for lambdas
-    """
-    # Question 6 - Load diabetes dataset and split into training and testing portions
-
-
-    # Question 7 - Perform CV for different values of the regularization parameter for Ridge and Lasso regressions
     r_train_score_lst, r_test_score_lst, l_train_score_lst, l_test_score_lst = [], [], [], []
     loss_func = lambda y_true, y_pred: mean_squared_error(y_true, y_pred)
 
     fig = make_subplots(rows=2, cols=1, subplot_titles=['x - lasso', 'y - lasso'],
                         horizontal_spacing=0.01, vertical_spacing=0.08)
+
     train_x, test_x, train_y, test_y = train_test_split(X, y_x, test_size=0.25, random_state=24)
+
     for i in y_x_lam_range:
         print('\r' + str(round(100 * i / y_x_lam_range[-1])) + ' %', end='')
         r_train_loss, r_test_loss = cross_validate(Lasso(alpha=i), train_x, train_y, loss_func)
@@ -163,9 +112,10 @@ def select_regularization_parameter(X, y_x, y_y,y_x_lam_range, y_y_lam_range, n_
                   col=1)
     fig.write_html(r'Ridge_lasso_regularization.html', auto_open=True)
 
-    # Question 8 - Compare best Ridge model, best Lasso model and Least Squares model
     rid_lam = np.argmin(r_test_score_lst)
     lasso_lam = np.argmin(l_test_score_lst)
+
+
     with open('MODEL_SUMMARY.txt', 'w') as f:
         f.write(str(dt.datetime.now().date()))
         print('\nridge lambda:', y_x_lam_range[rid_lam], '\nlasso lambda:', y_y_lam_range[lasso_lam])
@@ -187,32 +137,33 @@ def select_regularization_parameter(X, y_x, y_y,y_x_lam_range, y_y_lam_range, n_
 
 
 def main():
-    # df = pd.read_csv('waze_data.csv')
-    # df = clean(df)
-    #
-    # learn_df = get_comb(df)
-    # learn_df.to_csv('learn_df.csv')
+    df = pd.read_csv('waze_data.csv')
+    df = clean(df)
+
+    learn_df = get_comb(df)
+    print(learn_df.shape)
+    learn_df.to_csv('learn_df.csv')
+    time.sleep(0.2)
     df = pd.read_csv('learn_df.csv', index_col='Unnamed: 0')
     X, y = split_X_y_type_pred(df)
-    # our_knn(X, y)
-    # our_rf(X, y)
-    # our_tree_part(X, y)
+    our_knn(X, y)
 
     X, y = split_X_y_cord_pred(df)
     y_x = y.drop(columns='y_S5')
     y_y = y.drop(columns='x_S5')
 
-    select_regularization_parameter(X.to_numpy(), y_x.to_numpy(), y_y.to_numpy(),
-                                    np.linspace(1, 6, 200), np.linspace(1, 6, 200))
+    # select_regularization_parameter(X.to_numpy(), y_x.to_numpy(), y_y.to_numpy(),
+    #                                 np.linspace(1, 6, 200), np.linspace(1, 6, 200))
+
+    x_model = Lasso(alpha=3.2864321608040203).fit(X, y_x)
+    y_model = Lasso(alpha=3.7386934673366836).fit(X, y_y)
+    lasso_reg_x = [x_model.intercept_.item()] + x_model.coef_.tolist()
+    lasso_reg_y = [y_model.intercept_.item()] + y_model.coef_.tolist()
+
+    print(lasso_reg_x)
+    print(lasso_reg_y)
 
     print('all ok')
-
-    # new map
-    # df['str_roadType'] = df.loc[:, 'linqmap_roadType'].astype(str)
-    # mapp = go.Figure(layout=dict(title=dict(text='map')))
-    # mapp.add_scatter(go.Scatter())
-    # px.scatter(df, x='x', y='y', color='str_roadType')
-    # mapp.write_html('map.html', auto_open=False)
 
 
 def pred():

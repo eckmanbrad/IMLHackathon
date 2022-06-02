@@ -29,6 +29,7 @@ def clean_2(dirty_df):
     dirty_df['time_slot'].replace(slots_dict, inplace=True)
 
     dirty_df.to_csv('test.csv')
+    print(dirty_df)
     return dirty_df
 
 
