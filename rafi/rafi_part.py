@@ -6,10 +6,18 @@ import plotly.express as px
 import datetime as dt
 
 
+# get relevant cols
+def get_relevant(df):
+    df = pd.concat([df[df['linqmap_city'] == 'תל אביב - יפו'], df['linqmap_city'] == 'רמת גן'], axis=0)
+    print(df)
+
+
+# clean df
 def clean(dirty_df):
     # remove unwanted cols
     cols_to_remove = ['OBJECTID', 'linqmap_reportDescription', 'linqmap_nearby', 'linqmap_reportMood',
-                      'linqmap_expectedBeginDate', 'linqmap_expectedEndDate', 'nComments']
+                      'linqmap_expectedBeginDate', 'linqmap_expectedEndDate', 'nComments', 'linqmap_city',
+                      'linqmap_street']
     dirty_df.drop(columns=cols_to_remove, inplace=True)
 
     # remove nans from chosen cols
@@ -23,8 +31,10 @@ def clean(dirty_df):
     # remove magvar col
     dirty_df.drop(columns='linqmap_magvar', inplace=True)
 
-    # convert date & time to datetime object
+    # convert date & time & timestamp to datetime object
     dirty_df['pubDate'] = dirty_df.apply(lambda row: dt.datetime.strptime(row.pubDate, "%m/%d/%Y %H:%M:%S"), axis=1)
+    dirty_df['update_date'] = dirty_df.apply(lambda row: dt.datetime.fromtimestamp(row.update_date / 1000), axis=1)
+
     return dirty_df
 
 
@@ -41,13 +51,19 @@ def get_comb(df):
 
 def main():
     df = pd.read_csv('waze_data.csv')
+
+    df.to_excel('wazeee.xlsx')
+    return
+    df = get_relevant(df)
+    print(df['linqmap_city'])
     df = clean(df)
-    get_comb(df)
+    df.to_csv('test.csv')
+    # get_comb(df)
 
     print('all ok')
 
     print(df.columns)
-    # print(set(df['linqmap_city']))
+    print(set(df['linqmap_city']))
     # print(set(df['linqmap_street']))
     # print(sum(df['linqmap_subtype'].isna()))
 
@@ -72,5 +88,5 @@ def main():
 
 if __name__ == '__main__':
     # pd.set_option('display.max_rows', None)  # number of df rows to show
-    pd.set_option('display.max_columns', None)  # number of df columns to show
+    # pd.set_option('display.max_columns', None)  # number of df columns to show
     main()
