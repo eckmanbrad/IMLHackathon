@@ -3,30 +3,24 @@ import openpyxl
 import numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
-
-
-
+from final_functions import clean
 
 
 
 def get_comb(df):
-    combs = []
-    for frst in range(len(df)):
-        print(frst)
-        for sec in range(frst, len(df)):
-            for thrd in range(sec, len(df)):
-                for fourth in range(thrd, len(df)):
-                    combs.append([frst, sec, thrd, fourth])
+
+
+    combs = 1
     return combs
 
 
 def main():
-    df = pd.read_csv('waze_data.csv')
-    # df.to_excel('wazeee.xlsx')
+    # df = pd.read_csv('waze_data.csv')
+    # df = clean(df)
+    # df.to_csv('test.csv')
 
-    df = clean(df)
-    df.to_csv('test.csv')
-    # get_comb(df)
+    df = pd.read_csv('test.csv')
+    learn_df = get_comb(df)
 
     print('all ok')
 
