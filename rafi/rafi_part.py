@@ -1,3 +1,5 @@
+import time
+
 import pandas as pd
 from final_functions import clean, get_comb
 
@@ -5,11 +7,8 @@ from final_functions import clean, get_comb
 
 
 def main():
-    # df = pd.read_csv('waze_data.csv')
-    # df = clean(df)
-    # df.to_csv('test.csv')
-
-    df = pd.read_csv('test.csv')
+    df = pd.read_csv('waze_data.csv')
+    df = clean(df)
     learn_df = get_comb(df)
     learn_df.to_csv('learn_df.csv')
 

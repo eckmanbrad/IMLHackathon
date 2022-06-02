@@ -1,4 +1,6 @@
 import datetime as dt
+import time
+
 import numpy as np
 from csv import writer
 import pandas as pd
@@ -47,7 +49,7 @@ def get_comb(df):
         writer_object.writerow(new_cols)
 
         for i in range(df.shape[0] - 4):
-            print('\r', str(i / df.shape[0] - 4) + ' %', end='')
+            print('\r', str(round(i / (df.shape[0] - 4) * 100,2)) + ' %', end='')
             cur_row = []
             cur_row += list(df.loc[i, :])
             cur_row += list(df.loc[i + 1, :])
@@ -55,6 +57,7 @@ def get_comb(df):
             cur_row += list(df.loc[i + 3, :])
             cur_row += list(df.loc[i + 4, :])
             writer_object.writerow(cur_row)
-        print('100 %')
+        print('\r100 %')
     f_object.close()
+    time.sleep(0.5)
     return pd.read_csv('learn_df.csv')
