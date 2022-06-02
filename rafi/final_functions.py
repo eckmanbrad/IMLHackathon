@@ -1,8 +1,9 @@
 import datetime as dt
 import numpy as np
+from csv import writer
+import pandas as pd
 
 
-# clean df
 def clean(dirty_df):
     # get tlv rows
     dirty_df = dirty_df[dirty_df['linqmap_city'] == 'תל אביב - יפו'].copy()
@@ -23,8 +24,37 @@ def clean(dirty_df):
     # convert date & time & timestamp to datetime object
     dirty_df['pubDate'] = dirty_df.apply(lambda row: dt.datetime.strptime(row.pubDate, "%m/%d/%Y %H:%M:%S"), axis=1)
     dirty_df['update_date'] = dirty_df.apply(lambda row: dt.datetime.fromtimestamp(row.update_date / 1000), axis=1)
-    dirty_df['event_time_hours'] = dirty_df.apply(lambda row: (row.update_date - row.pubDate).total_seconds() / 3600, axis=1)
+    dirty_df['event_time_hours'] = dirty_df.apply(lambda row: (row.update_date - row.pubDate).total_seconds() / 3600,
+                                                  axis=1)
 
-    # remove magvar & pubdate col
-    dirty_df.drop(columns=['linqmap_magvar', 'pubDate'], inplace=True)
+    # add dummies for street
+    dums = pd.get_dummies(dirty_df['linqmap_street'])
+    dirty_df = pd.concat([dirty_df, dums], axis=1)
+
+    # remove magvar & pubdate & street col
+    dirty_df.drop(columns=['linqmap_magvar', 'pubDate', 'linqmap_street'], inplace=True)
+
+    dirty_df.sort_values(by='update_date', inplace=True)
     return dirty_df
+
+
+def get_comb(df):
+    new_cols = []
+    for i in range(1, 6):
+        new_cols += list(df.columns + '_X' + str(i))
+    with open('learn_df.csv', 'w') as f_object:
+        writer_object = writer(f_object)
+        writer_object.writerow(new_cols)
+
+        for i in range(df.shape[0] - 4):
+            print('\r', str(i / df.shape[0] - 4) + ' %', end='')
+            cur_row = []
+            cur_row += list(df.loc[i, :])
+            cur_row += list(df.loc[i + 1, :])
+            cur_row += list(df.loc[i + 2, :])
+            cur_row += list(df.loc[i + 3, :])
+            cur_row += list(df.loc[i + 4, :])
+            writer_object.writerow(cur_row)
+        print('100 %')
+    f_object.close()
+    return pd.read_csv('learn_df.csv')
