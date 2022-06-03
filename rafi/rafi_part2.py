@@ -34,7 +34,7 @@ def clean_2(dirty_df):
 
 
 def main():
-    df = pd.read_csv('waze_data.csv')
+    df = pd.read_csv('328958244/task1/waze_data.csv')
     df = clean_2(df)
 
 
