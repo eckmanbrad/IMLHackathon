@@ -20,4 +20,4 @@ def run_2(date_list):
 
                 to_file = temp_slot.loc[0, :].values.tolist()[-4:]
                 writer_object.writerow(to_file)
-                print('k')
+
