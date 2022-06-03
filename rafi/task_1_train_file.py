@@ -277,7 +277,6 @@ def main():
     time.sleep(0.2)
     df = pd.read_csv('learn_df.csv', index_col='Unnamed: 0')
     X, y = split_X_y_type_pred(df)
-    print(X.shape)
     our_knn(X, y)
 
     X, y = split_X_y_cord_pred(df)
@@ -289,6 +288,9 @@ def main():
 
     x_model = Lasso(alpha=3.2864321608040203).fit(X, y_x)
     y_model = Lasso(alpha=3.7386934673366836).fit(X, y_y)
+    pickle.dump(x_model, open('finalized_reg_x_model.sav', 'wb'))
+    pickle.dump(y_model, open('finalized_reg_y_model.sav', 'wb'))
+
     lasso_reg_x = [x_model.intercept_.item()] + x_model.coef_.tolist()
     lasso_reg_y = [y_model.intercept_.item()] + y_model.coef_.tolist()
 
